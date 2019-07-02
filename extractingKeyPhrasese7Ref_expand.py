@@ -36,12 +36,8 @@ dataClass.dataset.rawDict.apply(dataClass.dropReferences)
 allTermArrayCount = dataClass.extractVocab(list(dataClass.dataset.rawDict))
 
 
-
-
-
 pdf = computeTermPDF(allTermArrayCount)
 pdf.calculateProbTerm()
-
 
 
 tester = list(dataClass.dataset['refs'])
@@ -58,8 +54,7 @@ dataClass.dataset['stringDocs'] = dataClass.ALL_fillOutReference(dataClass)
 
 #print(dataClass.dataset.stringDocs[0])
 
-# process doc so it is an array of arrays
-dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
+
 
 #accDict = dataClass.extractAccronymnsFromText(text)
 
@@ -71,38 +66,41 @@ print(dataClass.dataset.accDict[1])
 
 dataClass.expandAccronymnsInText()
 
-# # #tester = dataClass.dataset.processDocs[0]
-# # # clean the corpus --> returns an array of array tokens
-# dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
-#
-# count = 0
-#
-# allIndex = []
-# for index in range(len(list(dataClass.dataset['processDocs']))):
-# #for index in range(0, 1):
-#
-#     print("at stage {}".format(index))
-#
-#     testerDoc = dataClass.dataset['processDocs'][index]
-#
-#     PR = pageRankClass(testerDoc)
-#
-#     # as far as here it is good
-#     PR.constructGraph(testerDoc)
-#     #print(PR.graph.nodes())
-#
-#     PR.createPhrasese()
-#
-#     #print(PR.posCorp)
-#     docKeys = dataClass.dataset.keyTerms[index]
-#     indexLoc = dataClass.extractKeyOrderedrank(PR.textRankDict , docKeys)
-#     allIndex.append(indexLoc)
-#
-#     print(list(PR.textRankDict.items())[:20])
-#
-# indexLoc = dataClass.rankLocationIndex(allIndex)
-# print(indexLoc)
-# dataClass.plotIndexResults(indexLoc)
+# process doc so it is an array of arrays
+dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
+
+# #tester = dataClass.dataset.processDocs[0]
+# # clean the corpus --> returns an array of array tokens
+dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
+
+dataClass.extractTargetTerms()
+
+allIndex = []
+for index in range(len(list(dataClass.dataset['processDocs']))):
+#for index in range(0, 1):
+
+    print("at stage {}".format(index))
+
+    testerDoc = dataClass.dataset['processDocs'][index]
+
+    PR = pageRankClass(testerDoc)
+
+    # as far as here it is good
+    PR.constructGraph(testerDoc)
+    #print(PR.graph.nodes())
+
+    PR.createPhrasese()
+
+    #print(PR.posCorp)
+    docKeys = dataClass.dataset.keyTerms[index]
+    indexLoc = dataClass.extractKeyOrderedrank(PR.textRankDict , docKeys)
+    allIndex.append(indexLoc)
+
+    print(list(PR.textRankDict.items())[:20])
+
+indexLoc = dataClass.rankLocationIndex(allIndex)
+print(indexLoc)
+dataClass.plotIndexResults(indexLoc)
 
 print(10*"-*-")
 print((time.time() - start)/60)
