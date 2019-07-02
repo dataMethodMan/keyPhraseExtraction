@@ -11,8 +11,7 @@ stop = set(stopwords.words('english'))
 
 start = time.time()
 # path associate with target data
-#path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
-path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
+path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
 # initialse class with path pointer
 dataClass = DataSet(path)
 methods = mainMethods(path)
@@ -57,86 +56,53 @@ dataClass.dataset['stringDocs'] = dataClass.dataset.rawDict.apply(dataClass.conc
 dataClass.dataset['stringDocs'] = dataClass.ALL_fillOutReference(dataClass)
 
 
+#print(dataClass.dataset.stringDocs[0])
 
 # process doc so it is an array of arrays
 dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
-text =  dataClass.dataset['processDocs'][0]
-#print(len(text))
 
+#accDict = dataClass.extractAccronymnsFromText(text)
 
+# expand accronyms
 
-# #tester = dataClass.dataset.processDocs[0]
-# # clean the corpus --> returns an array of array tokens
-dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
-text =  dataClass.dataset['processDocs'][0]
+# loops over docArrayStrings and creates a dictionary
+dataClass.dataset['accDict'] = dataClass.dataset['stringDocs'].apply(dataClass.extractAccronymnsFromText)
+print(dataClass.dataset.accDict[1])
 
-dataClass.extractTargetTerms()
-termKeys = dataClass.dataset['keyTerms'][0]
-dictTemp = {}
+dataClass.expandAccronymnsInText()
 
-
-
-# #dataClass.createConsecutivePhrases()
+# # #tester = dataClass.dataset.processDocs[0]
+# # # clean the corpus --> returns an array of array tokens
+# dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
 #
+# count = 0
 #
-# # create the pageRank
-# #result = dataClass.constructGraph(testerDoc)
+# allIndex = []
+# for index in range(len(list(dataClass.dataset['processDocs']))):
+# #for index in range(0, 1):
 #
-# # extract keyPhrases
-# # extract keys terms and phrases , filters text and returns a column keyTerms
-dataClass.extractTargetTerms()
-# #d   = {'dispersers': 12.599054, 'sources': 11.84855, 'extractor': 9.604512, 'source': 7.98054}
+#     print("at stage {}".format(index))
 #
-# for term in dataClass.dataset['keyTerms']:
-#     print(term)
+#     testerDoc = dataClass.dataset['processDocs'][index]
 #
-# present = 0
-# absent = 0
-# for i in range(1):
-#     for term in dataClass.dataset['keyTerms'][i]:
-#         if term in  dataClass.dataset.stringDocs[i].lower():
-#             present = present + 1
+#     PR = pageRankClass(testerDoc)
 #
-#         else:
-#             absent = absent + 1
-#             print(i)
-#             print(10*"-")
-#             print(term)
+#     # as far as here it is good
+#     PR.constructGraph(testerDoc)
+#     #print(PR.graph.nodes())
 #
-# print("present: " , present )
-# print("absent: " , absent )
-
-
-#d = OrderedDict(d)
-#print(d)
-count = 0
-
-allIndex = []
-for index in range(len(list(dataClass.dataset['processDocs']))):
-#for index in range(0, 1):
-
-    print("at stage {}".format(index))
-
-    testerDoc = dataClass.dataset['processDocs'][index]
-
-    PR = pageRankClass(testerDoc)
-
-    # as far as here it is good
-    PR.constructGraph(testerDoc)
-    #print(PR.graph.nodes())
-
-    PR.createPhrasese()
-
-    #print(PR.posCorp)
-    docKeys = dataClass.dataset.keyTerms[index]
-    indexLoc = dataClass.extractKeyOrderedrank(PR.textRankDict , docKeys)
-    allIndex.append(indexLoc)
-
-    print(list(PR.textRankDict.items())[:20])
-
-indexLoc = dataClass.rankLocationIndex(allIndex)
-print(indexLoc)
-dataClass.plotIndexResults(indexLoc)
+#     PR.createPhrasese()
+#
+#     #print(PR.posCorp)
+#     docKeys = dataClass.dataset.keyTerms[index]
+#     indexLoc = dataClass.extractKeyOrderedrank(PR.textRankDict , docKeys)
+#     allIndex.append(indexLoc)
+#
+#     print(list(PR.textRankDict.items())[:20])
+#
+# indexLoc = dataClass.rankLocationIndex(allIndex)
+# print(indexLoc)
+# dataClass.plotIndexResults(indexLoc)
 
 print(10*"-*-")
 print((time.time() - start)/60)

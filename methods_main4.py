@@ -33,6 +33,87 @@ class DataSet(object):
         # df that holds metaData on the class
         self.meta_dataset = pd.DataFrame()
 
+    def expandAccronymnsInText(self):
+        # method takes the dictionary created in extractAccronymnsFromText
+        # loops over processDocs -- arrays of string and expands accronyms
+        for i in range(self.dataset.shape[0]):
+            dictt = self.dataset.accDict[i]
+            text = self.dataset.stringDocs[i]
+            print(len(text))
+            print(10*"-")
+            print(type(text))
+            text = self.fillOutReference(text, dictt)
+            self.dataset.stringDocs[i] = text
+            print(len(self.dataset.stringDocs[i]))
+            print(10*"=")
+
+    def extractAccronymnsFromText(self, text):
+        # input is a string list of sentences
+        accronymDict = {}
+        # loop over the sentences in text
+        text = text.split(". ")
+        for t in text:
+            if "(" in t:
+                tester = self.extractCandidateSubstring1(t)
+                # if not blank add to dict
+                if tester[0] != '' and len(tester[0]) > 1:
+                    phrase = [x.lower() for x in tester[1]]
+                    accronymDict[tester[0]] = " ".join(phrase)
+                    #liste.append(tester)
+        return accronymDict
+
+
+    def extractCandidateSubstring1(self, match):
+        #print("this one")
+        pattern = '\((.*?)\)'
+        candidate = ""
+        substring = ""
+        #match = match.strip("\n")
+        match = match.split(" ")
+        for i in range(0, len(match)):
+            cand = re.search(pattern, match[i])
+            if cand:
+                candidate = cand.group(1)
+                # check that it is longer than 1
+                if len(candidate) > 1:
+                    # check and remove for non capital mix
+                    #print(candidate)
+                    if(self.lookingAtAcroynms(candidate)):
+                        candidate = self.removeNonCapitals(candidate)
+                    j = len(candidate)
+                    substring = match[i-j:i]
+                    #print(substring)
+                    # check if accronym is present
+                    wordsAccro = self.returnPotentAccro(substring)
+                    if candidate.lower() == wordsAccro.lower():
+                        # return the correct accro and definition
+                        return (candidate.lower(), substring)
+
+        # no accronym found return blank , will be filtered out
+        return("", "")
+
+    def lookingAtAcroynms(self, accro):
+        # case one check if accroynm has an append s
+        bool = False
+        for s in accro[:1]:
+            if s.isupper:
+                bool = True
+        return bool
+
+        # check of the main lettes match
+    def returnPotentAccro(self, substring):
+        firsts = ""
+        for s in substring:
+            if(len(s) > 0):
+                firsts = firsts + s[0]
+        return firsts
+
+    def removeNonCapitals(self, accro):
+        string = ""
+        for s in accro:
+            if s.isupper():
+                string = string + s
+        return string
 
     def createConsecutivePhrases(self):
         # iterate over corpus and extract connected terms
