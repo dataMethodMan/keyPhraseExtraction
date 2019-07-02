@@ -11,7 +11,8 @@ stop = set(stopwords.words('english'))
 
 start = time.time()
 # path associate with target data
-path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+#path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
 # initialse class with path pointer
 dataClass = DataSet(path)
 methods = mainMethods(path)
@@ -68,22 +69,11 @@ text =  dataClass.dataset['processDocs'][0]
 # # clean the corpus --> returns an array of array tokens
 dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
 text =  dataClass.dataset['processDocs'][0]
-print(10*"=")
-print(text)
+
 dataClass.extractTargetTerms()
 termKeys = dataClass.dataset['keyTerms'][0]
 dictTemp = {}
-for vector in text:
-    tester = " ".join(vector)
-    for key in termKeys:
-        if key in tester:
-            if key in list(dictTemp.keys()):
-                dictTemp[key] += 1
-            else:
-                dictTemp[key] = 1
-            print(tester)
-            print(10*"-+-")
-print(dictTemp)
+
 
 
 # #dataClass.createConsecutivePhrases()

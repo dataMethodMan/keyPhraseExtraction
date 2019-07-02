@@ -63,7 +63,6 @@ class DataSet(object):
 
     def extractKeyOrderedrank(self, docDict, docKeyTerms):
         # sort the dictionary to allow for phrases being added
-        docDict = dict(sorted(docDict.items(), key=lambda x: x[1], reverse = True))
 
         index = [x for x in range(1 , len(docDict.items())+ 1)]
 
@@ -80,7 +79,7 @@ class DataSet(object):
                 indexLoc.append(-1)
                 temp[key] = - 1
 
-        print(temp)
+
         return indexLoc
 
 
@@ -549,6 +548,9 @@ class pageRankClass():
                     phrase = []
                     phraseScore = 0
 
+        self.textRankDict = dict(sorted(self.textRankDict.items(), key=lambda x: x[1], reverse = True))
+
+
 
 
     def computePhraseValue(self, phrase):
@@ -561,21 +563,9 @@ class pageRankClass():
         # create a a new instance Text without the _
         Text = [[x for x in array if x is not "_"] for array in self.posCorp]
 
-        checkArray = []
-        for t in Text:
-            checkArray.extend(t)
-            tester = " ".join(t)
-            if "ramsey graphs" in tester:
-                print("Here!")
-        print(len(checkArray))
-        print(len(set(checkArray)))
+
         # method takes array of arrays of tokenised corpus
         graph = self.plotDiGraph([Text])
-        print(len(self.graph.nodes()))
-        if "ramsey" in self.graph.nodes():
-            print(self.graph['ramsey'])
-        if self.graph.has_edge("ramsey", "graphs"):
-            print("true")
         # create the inout dict
         # takes construct graph and maps the neighbours of the graph
         self.createInoutDict()
@@ -631,8 +621,8 @@ class pageRankClass():
                 while(len(section) > 1):
                     self.graph, section = self.plotArray( section, depth, self.graph)
         # update vocab list
-        self.vocab = self.graph.nodes()
-        print(len(self.vocab), "<-----")
+        self.vocab = list(self.graph.nodes())
+
         #return g
 
     def plotArray(self, array, depth, g):
