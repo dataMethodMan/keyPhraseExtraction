@@ -36,10 +36,15 @@ dataClass.dataset.rawDict.apply(dataClass.dropReferences)
 allTermArrayCount = dataClass.extractVocab(list(dataClass.dataset.rawDict))
 
 
+
+
+
 pdf = computeTermPDF(allTermArrayCount)
 pdf.calculateProbTerm()
 
-#tester = list(dataClass.dataset['refs'])
+
+
+tester = list(dataClass.dataset['refs'])
 
 # takes out unwanted terms in references
 dataClass.dataset['refs'] = dataClass.cleanRefs(dataClass.dataset.refs, pdf)
@@ -54,32 +59,81 @@ dataClass.dataset['stringDocs'] = dataClass.ALL_fillOutReference(dataClass)
 
 # process doc so it is an array of arrays
 dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
-tester = dataClass.dataset.processDocs[0]
-# clean the corpus --> returns an array of array tokens
+text =  dataClass.dataset['processDocs'][0]
+#print(len(text))
+
+
+
+# #tester = dataClass.dataset.processDocs[0]
+# # clean the corpus --> returns an array of array tokens
 dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
-
-
-# create the pageRank
-#result = dataClass.constructGraph(testerDoc)
-
-# extract keyPhrases
-# extract keys terms and phrases , filters text and returns a column keyTerms
+text =  dataClass.dataset['processDocs'][0]
+print(10*"=")
+print(text)
 dataClass.extractTargetTerms()
-#d   = {'dispersers': 12.599054, 'sources': 11.84855, 'extractor': 9.604512, 'source': 7.98054}
+termKeys = dataClass.dataset['keyTerms'][0]
+dictTemp = {}
+for vector in text:
+    tester = " ".join(vector)
+    for key in termKeys:
+        if key in tester:
+            if key in list(dictTemp.keys()):
+                dictTemp[key] += 1
+            else:
+                dictTemp[key] = 1
+            print(tester)
+            print(10*"-+-")
+print(dictTemp)
+
+
+# #dataClass.createConsecutivePhrases()
+#
+#
+# # create the pageRank
+# #result = dataClass.constructGraph(testerDoc)
+#
+# # extract keyPhrases
+# # extract keys terms and phrases , filters text and returns a column keyTerms
+dataClass.extractTargetTerms()
+# #d   = {'dispersers': 12.599054, 'sources': 11.84855, 'extractor': 9.604512, 'source': 7.98054}
+#
+# for term in dataClass.dataset['keyTerms']:
+#     print(term)
+#
+# present = 0
+# absent = 0
+# for i in range(1):
+#     for term in dataClass.dataset['keyTerms'][i]:
+#         if term in  dataClass.dataset.stringDocs[i].lower():
+#             present = present + 1
+#
+#         else:
+#             absent = absent + 1
+#             print(i)
+#             print(10*"-")
+#             print(term)
+#
+# print("present: " , present )
+# print("absent: " , absent )
+
 
 #d = OrderedDict(d)
 #print(d)
+count = 0
 
 allIndex = []
-#for index in range(len(list(dataClass.dataset['processDocs']))):
-for index in range(1, 2):
+for index in range(len(list(dataClass.dataset['processDocs']))):
+#for index in range(0, 1):
 
     print("at stage {}".format(index))
 
     testerDoc = dataClass.dataset['processDocs'][index]
+
     PR = pageRankClass(testerDoc)
 
+    # as far as here it is good
     PR.constructGraph(testerDoc)
+    #print(PR.graph.nodes())
 
     PR.createPhrasese()
 
