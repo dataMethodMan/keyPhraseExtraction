@@ -34,8 +34,35 @@ class DataSet(object):
         self.meta_dataset = pd.DataFrame()
 
 
+    def createConsecutivePhrases(self):
+        # iterate over corpus and extract connected terms
+        print(self.dataset.columns)
+        doc_dict = {}
+        index = 0
+        sliding_window = 4
+        term = ""
+
+        doc = self.dataset.processDocs[0]
+
+        for array in doc:
+            while len(array) > 1:
+                array = self.reduceVector(array, sliding_window)
+            print()
+
+
+
+        # remove singles and parse text
+
+
+    def reduceVector(self, vector, sliding_window):
+        processArray = [vector[:sliding_window]]
+        print(processArray)
+        return vector[sliding_window:]
+
+
+
     def extractKeyOrderedrank(self, docDict, docKeyTerms):
-        # sort the dictionary to allow for phrases being added 
+        # sort the dictionary to allow for phrases being added
         docDict = dict(sorted(docDict.items(), key=lambda x: x[1], reverse = True))
 
         index = [x for x in range(1 , len(docDict.items())+ 1)]
@@ -44,13 +71,16 @@ class DataSet(object):
         docDict = dict(zip(docDict.keys(), index))
         indexLoc = []
         print(docKeyTerms)
+        temp = {}
         for key in docKeyTerms:
             if key in docDict.keys():
-
                 indexLoc.append(docDict[key])
+                temp[key] = docDict[key]
             else:
                 indexLoc.append(-1)
+                temp[key] = - 1
 
+        print(temp)
         return indexLoc
 
 
@@ -97,7 +127,7 @@ class DataSet(object):
         path = self.path + str(text) + "/" + str(text) + ".kwd"
         try:
             text = self.extractContent(path, removeLines = False)
-            text = [re.sub('[^a-zA-Z0-9]', ' ' , x.strip().lower()) for x in text.split("\n") if len(x)> 1]
+            text = [ x.strip().lower() for x in text.split("\n") if len(x)> 1]
         except:
             text = []
         return text
@@ -108,7 +138,7 @@ class DataSet(object):
         try:
             text = self.extractContent(path, removeLines = False)
             # cleans unwanted text
-            text = [re.sub('[^a-zA-Z0-9]', ' ' , x.strip().lower()) for x in text.split("\n") if len(x)> 1]
+            text = [x.strip().lower() for x in text.split("\n") if len(x)> 1]
         except:
             #print("keyword absent: " + str(text))
             text = []
@@ -117,9 +147,10 @@ class DataSet(object):
 
     def cleanSentences(self, text):
         allSent = []
+        bool = False
         for line in text:
             line = self.cleanSent(line)
-            line = [x for x in line.split() if len(x) > 1 and x not in stop]
+            line = [x for x in line.split() if len(x) > 1]
             if len(line)  > 1:
                 allSent.append(line)
         return allSent
@@ -442,6 +473,8 @@ class DataSet(object):
 
         plt.show()
 
+
+
 class computeTermPDF():
     def __init__(self, allTermArrayCount):
         print(len(allTermArrayCount), "length")
@@ -492,10 +525,14 @@ class pageRankClass():
 
     def createPhrasese(self):
         for phrases in self.posCorp:
+            bool = False
             #print(phrase)
             phrase = []
             phraseScore = 0
             for word in phrases:
+                if word == "ramsey":
+                    bool = True
+                    print(phrases)
                 if word != "_":
                     phrase.append(word)
                     try:
@@ -504,14 +541,14 @@ class pageRankClass():
                         print("exception term: ",  word)
                 else:
                     if len(phrase) > 1:
+                        if bool:
+                            print(phrase)
+                            bool = False
                         self.textRankDict[" ".join(phrase)] = phraseScore/len(phrase)
                         #print(phrase , phraseScore/len(phrase))
                     phrase = []
                     phraseScore = 0
 
-
-            # for word in phrase:
-            #     if word != "-":
 
 
     def computePhraseValue(self, phrase):
@@ -521,12 +558,24 @@ class pageRankClass():
     def constructGraph(self, testerDoc):
         # iterates over array of array tokens and replaces non pos with _
         self.posCorp = self.extractPosTags(testerDoc)
-
         # create a a new instance Text without the _
         Text = [[x for x in array if x is not "_"] for array in self.posCorp]
 
+        checkArray = []
+        for t in Text:
+            checkArray.extend(t)
+            tester = " ".join(t)
+            if "ramsey graphs" in tester:
+                print("Here!")
+        print(len(checkArray))
+        print(len(set(checkArray)))
         # method takes array of arrays of tokenised corpus
         graph = self.plotDiGraph([Text])
+        print(len(self.graph.nodes()))
+        if "ramsey" in self.graph.nodes():
+            print(self.graph['ramsey'])
+        if self.graph.has_edge("ramsey", "graphs"):
+            print("true")
         # create the inout dict
         # takes construct graph and maps the neighbours of the graph
         self.createInoutDict()
@@ -583,6 +632,7 @@ class pageRankClass():
                     self.graph, section = self.plotArray( section, depth, self.graph)
         # update vocab list
         self.vocab = self.graph.nodes()
+        print(len(self.vocab), "<-----")
         #return g
 
     def plotArray(self, array, depth, g):
