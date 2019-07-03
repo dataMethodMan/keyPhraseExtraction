@@ -52,19 +52,10 @@ dataClass.dataset['stringDocs'] = dataClass.dataset.rawDict.apply(dataClass.conc
 dataClass.dataset['stringDocs'] = dataClass.ALL_fillOutReference(dataClass)
 
 
-#print(dataClass.dataset.stringDocs[0])
-
-
-
-#accDict = dataClass.extractAccronymnsFromText(text)
-
 # expand accronyms
-
 # loops over docArrayStrings and creates a dictionary
 dataClass.dataset['accDict'] = dataClass.dataset['stringDocs'].apply(dataClass.extractAccronymnsFromText)
-print(dataClass.dataset.accDict[1])
-
-dataClass.expandAccronymnsInText()
+#dataClass.expandAccronymnsInText()
 
 # process doc so it is an array of arrays
 dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
@@ -73,11 +64,24 @@ dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass
 # # clean the corpus --> returns an array of array tokens
 dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
 
+text = dataClass.dataset['processDocs'][3]
+
+
+dataClass.createAjoinedPhrases(text)
+
+
+#dictt = dataClass.dataset.accDict[3]
+#text = dataClass.dataset.stringDocs[3]
+
+#text = "PKI is something I am looking for"
+#text = dataClass.fillOutReference(text, dictt)
+
+
 dataClass.extractTargetTerms()
 
 allIndex = []
-for index in range(len(list(dataClass.dataset['processDocs']))):
-#for index in range(0, 1):
+#for index in range(len(list(dataClass.dataset['processDocs']))):
+for index in range(0, 1):
 
     print("at stage {}".format(index))
 

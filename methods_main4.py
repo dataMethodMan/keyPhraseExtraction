@@ -32,20 +32,47 @@ class DataSet(object):
         self.dataset = pd.DataFrame()
         # df that holds metaData on the class
         self.meta_dataset = pd.DataFrame()
+        # dict to hold phrases
+        self.phraseDict = {}
+
+    def createAjoinedPhrases(self, text):
+        print(len(text))
+        # length of phrases to be generated
+        for t in text:
+            while len(t) > 1:
+                t = self.generatePhraseFromArray(t)
+
+    def generatePhraseFromArray(self, vector):
+        #phrase = " ".join(vector)
+        vec = vector[:4]
+        sliding_window = 4
+        if len(vec) < sliding_window:
+            sliding_window = len(vec)
+        index = 2
+        while index < sliding_window + 1:
+            phrase = vec[:index]
+            index = index + 1
+            phrase = " ".join(phrase)
+            if phrase in self.phraseDict.keys():
+                self.phraseDict[phrase] += 1
+            else:
+                self.phraseDict[phrase] = 1
+
+
+        return vector[1:]
+
+
 
     def expandAccronymnsInText(self):
         # method takes the dictionary created in extractAccronymnsFromText
         # loops over processDocs -- arrays of string and expands accronyms
         for i in range(self.dataset.shape[0]):
             dictt = self.dataset.accDict[i]
+            #print(dictt)
             text = self.dataset.stringDocs[i]
-            print(len(text))
-            print(10*"-")
-            print(type(text))
             text = self.fillOutReference(text, dictt)
             self.dataset.stringDocs[i] = text
-            print(len(self.dataset.stringDocs[i]))
-            print(10*"=")
+
 
     def extractAccronymnsFromText(self, text):
         # input is a string list of sentences
@@ -87,7 +114,7 @@ class DataSet(object):
                     wordsAccro = self.returnPotentAccro(substring)
                     if candidate.lower() == wordsAccro.lower():
                         # return the correct accro and definition
-                        return (candidate.lower(), substring)
+                        return (candidate, substring)
 
         # no accronym found return blank , will be filtered out
         return("", "")
@@ -144,13 +171,16 @@ class DataSet(object):
 
     def extractKeyOrderedrank(self, docDict, docKeyTerms):
         # sort the dictionary to allow for phrases being added
+        #docDict = dict(sorted(docDict.items(), key=lambda x: x[1], reverse = True))
+
+
 
         index = [x for x in range(1 , len(docDict.items())+ 1)]
 
         # assign index to rank
         docDict = dict(zip(docDict.keys(), index))
         indexLoc = []
-        print(docKeyTerms)
+        #print(docKeyTerms)
         temp = {}
         for key in docKeyTerms:
             if key in docDict.keys():
@@ -160,7 +190,7 @@ class DataSet(object):
                 indexLoc.append(-1)
                 temp[key] = - 1
 
-
+        print(temp)
         return indexLoc
 
 
@@ -271,7 +301,9 @@ class DataSet(object):
     def fillOutReference(self, text, ref_dict):
         # takes as arguemnt string and dictionary and expands reference numbers
         for key , value in ref_dict.items():
-            text = text.replace( key, value)
+            value = "." +  value + "."
+            if value in text:
+                text = text.replace( key, value)
         return text
 
 
@@ -580,6 +612,8 @@ class computeTermPDF():
             return 0
 
 
+
+
 class pageRankClass():
 
     def __init__(self, corpus):
@@ -603,6 +637,9 @@ class pageRankClass():
         # holds the final score
         self.textRankDict = {}
 
+
+
+
     def createPhrasese(self):
         for phrases in self.posCorp:
             bool = False
@@ -610,9 +647,6 @@ class pageRankClass():
             phrase = []
             phraseScore = 0
             for word in phrases:
-                if word == "ramsey":
-                    bool = True
-                    print(phrases)
                 if word != "_":
                     phrase.append(word)
                     try:
@@ -624,7 +658,9 @@ class pageRankClass():
                         if bool:
                             print(phrase)
                             bool = False
-                        self.textRankDict[" ".join(phrase)] = phraseScore/len(phrase)
+                        phrase = " ".join(phrase)
+                        if phrase not in self.textRankDict.keys():
+                            self.textRankDict[phrase] = phraseScore/len(phrase.split())
                         #print(phrase , phraseScore/len(phrase))
                     phrase = []
                     phraseScore = 0
