@@ -11,8 +11,8 @@ stop = set(stopwords.words('english'))
 
 start = time.time()
 # path associate with target data
-#path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
-path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
+path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+#path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
 # initialse class with path pointer
 dataClass = DataSet(path)
 methods = mainMethods(path)
@@ -72,12 +72,17 @@ dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass
 # #tester = dataClass.dataset.processDocs[0]
 # # clean the corpus --> returns an array of array tokens
 dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
-
 #dataClass.createAjoinedPhrases(text)
 
 dataClass.extractTargetTerms()
 
-
+# stemming is allowed in the evaluation
+# takes about a minute
+print("stemming_____")
+text = dataClass.dataset['keyTerms'][2]
+dataClass.dataset['processDocs'] = dataClass.dataset['processDocs'].apply(dataClass.stem_Doc)
+dataClass.dataset['keyTerms'] = dataClass.dataset['keyTerms'].apply(dataClass.stem_array)
+print("stemming complete.")
 
 
 allIndex = []

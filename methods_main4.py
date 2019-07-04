@@ -12,6 +12,7 @@ import itertools
 import nltk
 from nltk.corpus import stopwords
 stop = set(stopwords.words('english'))
+from nltk.stem import PorterStemmer
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,6 +37,39 @@ class DataSet(object):
         # dict to hold phrases
         self.phraseDict = {}
 
+
+    def stem_Doc(self, text):
+        # takes in as argument array of arrays of tokenised string
+        # iterates over arrays and passes each internal array of token to stem_array(self, text)
+        docList = []
+        for t in text:
+            docList.append(self.stem_array(t))
+
+        return docList
+
+
+    def stem_array(self, text):
+        # takes as argument array of tokenised string and returns array of stemmed tokens
+        ps = PorterStemmer()
+        termArray = []
+        for word in text:
+            if len(word.split()) > 1:
+                # exception if phrase are past instead of terms
+                # calls handlephrases which takes string phrase individually tokenises phrase and returns string
+                word = self.handlePhrases(word)
+            else:
+                word = ps.stem(word)
+
+            termArray.append(word)
+        return (termArray)
+
+    def handlePhrases(self, text):
+        # exception method if text is a combination of terms
+        # returns a string of the stemmed phrase
+        #text = self.stem_array(text.split())
+        word = " ".join(self.stem_array(text.split()))
+        return word
+
     def calculateFscore(self, y_pred , y_true ):
 
 
@@ -49,7 +83,10 @@ class DataSet(object):
         precision = float(correct/len(y_pred))
 
         # recall = correct/len(y_pred)
-        recall = float(correct/len(y_true))
+        try:
+            recall = float(correct/len(y_true))
+        except:
+            recall = 0
 
         # fscore = 2 *( precision * recall)/(precision + recall)
         try:
@@ -585,6 +622,9 @@ class DataSet(object):
     #     ratioDict = dict(zip(candList, ratioList))
     #     title = max(ratioDict.items(), key=operator.itemgetter(1))[0]
     #     return title
+
+
+
 
     def cleanSent(self, sent):
         remove = string.punctuation
