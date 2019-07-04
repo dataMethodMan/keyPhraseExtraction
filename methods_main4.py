@@ -329,7 +329,7 @@ class DataSet(object):
         bool = False
         for line in text:
             line = self.cleanSent(line)
-            line = [x for x in line.split() if len(x) > 1]
+            line = [x for x in line.split() if len(x) > 1 if x not in stop]
             if len(line)  > 1:
                 allSent.append(line)
         return allSent

@@ -11,8 +11,8 @@ stop = set(stopwords.words('english'))
 
 start = time.time()
 # path associate with target data
-path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
-#path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
+#path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
 # initialse class with path pointer
 dataClass = DataSet(path)
 methods = mainMethods(path)
@@ -82,6 +82,10 @@ print("stemming_____")
 text = dataClass.dataset['keyTerms'][2]
 dataClass.dataset['processDocs'] = dataClass.dataset['processDocs'].apply(dataClass.stem_Doc)
 dataClass.dataset['keyTerms'] = dataClass.dataset['keyTerms'].apply(dataClass.stem_array)
+text = dataClass.dataset['processDocs'][2]
+print(text)
+text = dataClass.dataset['keyTerms'][2]
+print(text)
 print("stemming complete.")
 
 
@@ -109,7 +113,7 @@ for index in range(len(list(dataClass.dataset['processDocs']))):
     indexLoc = dataClass.extractKeyOrderedrank(PR.textRankDict , docKeys)
     allIndex.append(indexLoc)
 
-    y_pred = dict(list(PR.textRankDict.items())[:20])
+    y_pred = dict(list(PR.textRankDict.items())[:15])
     y_true = docKeys
 
     precision_instance , recall_instance, fscore_instance = dataClass.calculateFscore( y_pred, y_true)
