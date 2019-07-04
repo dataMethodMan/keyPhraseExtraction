@@ -362,7 +362,11 @@ class DataSet(object):
             #print(index , dataClass.meta_dataset.files[index])
             text = self.fillOutReference(dataClass.dataset.stringDocs[index], dataClass.dataset.refs[index])
             #print(text)
+            # reintroduce references as per base of page
+            for value in dataClass.dataset.refs[index].values():
+                text = text + ". " + value
             stringDocsArray.append(text)
+
         return stringDocsArray
 
 
