@@ -11,7 +11,8 @@ stop = set(stopwords.words('english'))
 
 start = time.time()
 # path associate with target data
-path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+#path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
 # initialse class with path pointer
 dataClass = DataSet(path)
 methods = mainMethods(path)
@@ -40,7 +41,7 @@ pdf = computeTermPDF(allTermArrayCount)
 pdf.calculateProbTerm()
 
 
-tester = list(dataClass.dataset['refs'])
+#tester = list(dataClass.dataset['refs'])
 
 # takes out unwanted terms in references
 dataClass.dataset['refs'] = dataClass.cleanRefs(dataClass.dataset.refs, pdf)
@@ -49,39 +50,42 @@ dataClass.dataset['refs'] = dataClass.cleanRefs(dataClass.dataset.refs, pdf)
 dataClass.dataset['stringDocs'] = dataClass.dataset.rawDict.apply(dataClass.concatDict)
 
 # method takes the columns refs and stringDocs and expands refs in all docs
-dataClass.dataset['stringDocs'] = dataClass.ALL_fillOutReference(dataClass)
+#dataClass.dataset['stringDocs'] = dataClass.ALL_fillOutReference(dataClass)
 
 
 # expand accronyms
 # loops over docArrayStrings and creates a dictionary
-dataClass.dataset['accDict'] = dataClass.dataset['stringDocs'].apply(dataClass.extractAccronymnsFromText)
+#dataClass.dataset['accDict'] = dataClass.dataset['stringDocs'].apply(dataClass.extractAccronymnsFromText)
 #dataClass.expandAccronymnsInText()
 
 # process doc so it is an array of arrays
-dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
+# 1.  instance of deliminators
+#dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
+dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.wrapTextInArray)
 
+
+
+#dataClass.dataset['processDocs'] = dataClass.dataset.stringDocs
+
+
+#dataClass.dataset['processDocs'] = dataClass.dataset['stringDocs']
 # #tester = dataClass.dataset.processDocs[0]
 # # clean the corpus --> returns an array of array tokens
 dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
 
-text = dataClass.dataset['processDocs'][3]
-
-
-dataClass.createAjoinedPhrases(text)
-
-
-#dictt = dataClass.dataset.accDict[3]
-#text = dataClass.dataset.stringDocs[3]
-
-#text = "PKI is something I am looking for"
-#text = dataClass.fillOutReference(text, dictt)
-
+#dataClass.createAjoinedPhrases(text)
 
 dataClass.extractTargetTerms()
 
+
+
+
 allIndex = []
-#for index in range(len(list(dataClass.dataset['processDocs']))):
-for index in range(0, 1):
+precision = 0
+recall = 0
+fscore = 0
+for index in range(len(list(dataClass.dataset['processDocs']))):
+#for index in range(0, 1):
 
     print("at stage {}".format(index))
 
@@ -100,11 +104,25 @@ for index in range(0, 1):
     indexLoc = dataClass.extractKeyOrderedrank(PR.textRankDict , docKeys)
     allIndex.append(indexLoc)
 
-    print(list(PR.textRankDict.items())[:20])
+    y_pred = dict(list(PR.textRankDict.items())[:20])
+    y_true = docKeys
+
+    precision_instance , recall_instance, fscore_instance = dataClass.calculateFscore( y_pred, y_true)
+    precision += precision_instance
+    recall += recall_instance
+    fscore += fscore_instance
+    # print(10*"*")
+    # print(precision , recall, fscore)
+    # print(10*"-")
 
 indexLoc = dataClass.rankLocationIndex(allIndex)
 print(indexLoc)
 dataClass.plotIndexResults(indexLoc)
+
+eval_sum = sum([1 for terms in dataClass.dataset.keyTerms if len(terms) > 0])
+
+print(" p , r , f {} {} {} ".format(precision/eval_sum , recall/eval_sum, fscore/eval_sum))
+
 
 print(10*"-*-")
 print((time.time() - start)/60)

@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+
 class DataSet(object):
     """ represents the class object of the target Text
         Attributes:
@@ -34,6 +35,37 @@ class DataSet(object):
         self.meta_dataset = pd.DataFrame()
         # dict to hold phrases
         self.phraseDict = {}
+
+    def calculateFscore(self, y_pred , y_true ):
+
+
+        y_pred = list(y_pred.keys())
+        y_true = y_true
+        print(y_true)
+
+        #precision = (number of true positives)/ number of positives predicted
+        correct = [1 for x in y_true if x in y_pred ]
+        correct = sum(correct)
+        precision = float(correct/len(y_pred))
+
+        # recall = correct/len(y_pred)
+        recall = float(correct/len(y_true))
+
+        # fscore = 2 *( precision * recall)/(precision + recall)
+        try:
+            fscore = 2*(precision*recall)/(precision + recall)
+        except:
+            fscore = 0
+
+        print(fscore)
+
+        return precision*100 , recall*100 , fscore*100
+
+
+
+
+    def wrapTextInArray(self, text):
+        return [text]
 
     def createAjoinedPhrases(self, text):
         print(len(text))
