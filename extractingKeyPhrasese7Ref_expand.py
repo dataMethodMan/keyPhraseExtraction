@@ -11,8 +11,8 @@ stop = set(stopwords.words('english'))
 
 start = time.time()
 # path associate with target data
-path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
-#path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
+#path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
 # initialse class with path pointer
 dataClass = DataSet(path)
 methods = mainMethods(path)
@@ -50,14 +50,26 @@ dataClass.dataset['refs'] = dataClass.cleanRefs(dataClass.dataset.refs, pdf)
 dataClass.dataset['stringDocs'] = dataClass.dataset.rawDict.apply(dataClass.concatDict)
 
 # method takes the columns refs and stringDocs and expands refs in all docs
-dataClass.dataset['stringDocs'] = dataClass.ALL_fillOutReference(dataClass)
+#dataClass.dataset['stringDocs'] = dataClass.ALL_fillOutReference(dataClass)
 
 
-#
-# # expand accronyms
-# # loops over docArrayStrings and creates a dictionary
-# #dataClass.dataset['accDict'] = dataClass.dataset['stringDocs'].apply(dataClass.extractAccronymnsFromText)
-# #dataClass.expandAccronymnsInText()
+text1 = dataClass.dataset.stringDocs[12]
+#print(text1)
+# expand accronyms
+# loops over docArrayStrings and creates a dictionary
+######dataClass.dataset['accDict'] = dataClass.dataset['stringDocs'].apply(dataClass.extractAccronymnsFromText)
+accDict = dataClass.extractAllAcronymsFromText(dataClass.dataset)
+print(len(accDict.keys()))
+dataClass.expandAccronymnsInText(accDict)
+
+text = dataClass.dataset.stringDocs[13]
+print(text)
+print(len(text))
+print(len(text1))
+
+
+# for k, v in accDict.items():
+#     print(k, v)
 #
 # # process doc so it is an array of arrays
 # # 1.  instance of deliminators

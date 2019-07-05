@@ -132,20 +132,27 @@ class DataSet(object):
 
 
 
-    def expandAccronymnsInText(self):
+    def expandAccronymnsInText(self, accDict):
         # method takes the dictionary created in extractAccronymnsFromText
         # loops over processDocs -- arrays of string and expands accronyms
         for i in range(self.dataset.shape[0]):
-            dictt = self.dataset.accDict[i]
+            #dictt = self.dataset.accDict[i]
             #print(dictt)
             text = self.dataset.stringDocs[i]
-            text = self.fillOutReference(text, dictt)
+            text = self.fillOutReference(text, accDict)
             self.dataset.stringDocs[i] = text
 
-
-    def extractAccronymnsFromText(self, text):
-        # input is a string list of sentences
+    def extractAllAcronymsFromText(self, corpus):
         accronymDict = {}
+        for doc in corpus.stringDocs:
+            accronymDict = self.extractAccronymnsFromText(doc, accronymDict)
+
+        return accronymDict
+
+
+
+    def extractAccronymnsFromText(self, text, accronymDict):
+        # input is a string list of sentences
         # loop over the sentences in text
         text = text.split(". ")
         for t in text:
@@ -329,7 +336,7 @@ class DataSet(object):
         bool = False
         for line in text:
             line = self.cleanSent(line)
-            line = [x for x in line.split() if len(x) > 1 if x not in stop]
+            line = [x for x in line.split() if len(x) > 1]
             if len(line)  > 1:
                 allSent.append(line)
         return allSent
@@ -363,9 +370,9 @@ class DataSet(object):
             text = self.fillOutReference(dataClass.dataset.stringDocs[index], dataClass.dataset.refs[index])
             #print(text)
             # reintroduce references as per base of page
-            for value in dataClass.dataset.refs[index].values():
-                text = text + ". " + value
-            stringDocsArray.append(text)
+            # for value in dataClass.dataset.refs[index].values():
+            #      text = text + ". " + value
+            # stringDocsArray.append(text)
 
         return stringDocsArray
 
@@ -373,11 +380,26 @@ class DataSet(object):
 
     def fillOutReference(self, text, ref_dict):
         # takes as arguemnt string and dictionary and expands reference numbers
+        count = 0
         for key , value in ref_dict.items():
-            value = "." +  value + "."
-            if value in text:
+            #value = "." +  value + "."
+            if key.lower() in text.lower():
+                value = value + " " + key
+                value = " . " +  value + " . "
+                #print(value)
+                #value = self.capitaliseText(value)
                 text = text.replace( key, value)
+                count = count + 1
+        #print("numebr of accs added {}".format(count))
         return text
+
+    def capitaliseText(self, text):
+        term = ""
+        for letter in text:
+            letter = letter.upper()
+            term = term + letter + " "
+            term = term.strip()
+        return term
 
 
     def concatDict(self, dictt):
