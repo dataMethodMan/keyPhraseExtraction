@@ -11,8 +11,8 @@ stop = set(stopwords.words('english'))
 
 start = time.time()
 # path associate with target data
-#path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
-path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
+path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+#path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
 # initialse class with path pointer
 dataClass = DataSet(path)
 methods = mainMethods(path)
@@ -53,97 +53,116 @@ dataClass.dataset['stringDocs'] = dataClass.dataset.rawDict.apply(dataClass.conc
 #dataClass.dataset['stringDocs'] = dataClass.ALL_fillOutReference(dataClass)
 
 
-text1 = dataClass.dataset.stringDocs[12]
-#print(text1)
+dataClass.dataset.stringDocs[12]
+
 # expand accronyms
 # loops over docArrayStrings and creates a dictionary
 ######dataClass.dataset['accDict'] = dataClass.dataset['stringDocs'].apply(dataClass.extractAccronymnsFromText)
-accDict = dataClass.extractAllAcronymsFromText(dataClass.dataset)
-print(len(accDict.keys()))
-dataClass.expandAccronymnsInText(accDict)
+#print(len(accDict.keys()))
+#dataClass.expandAccronymnsInText(accDict)
+dataClass.dataset['accDict'] = dataClass.dataset['stringDocs'].apply(dataClass.extractAccronymnsFromText)
+dataClass.expandAccronymnsInText()
 
-text = dataClass.dataset.stringDocs[13]
-print(text)
-print(len(text))
-print(len(text1))
-
+#print("\n\n")
+#text = dataClass.dataset.stringDocs[12]
+#print(text)
+#dictt = dataClass.dataset.accDict[12]
+#print(dictt)
+#text = dataClass.fillOutReference(text, dictt)
+# for k in text.keys():
+#     print(k)
+# print(text)
+# print(len(text))
+# print(len(text1))
+#
+# print("fillingout acc")
+# dictt = dataClass.dataset.accDict[12]
+# print(dictt)
+# #text = dataClass.fillOutAcronymns(text, accDict)
+#
+# print(len(text))
 
 # for k, v in accDict.items():
 #     print(k, v)
 #
-# # process doc so it is an array of arrays
-# # 1.  instance of deliminators
-# #dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
-# dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.wrapTextInArray)
-#
-#
-#
-# #dataClass.dataset['processDocs'] = dataClass.dataset.stringDocs
-#
-#
-# #dataClass.dataset['processDocs'] = dataClass.dataset['stringDocs']
-# # #tester = dataClass.dataset.processDocs[0]
-# # # clean the corpus --> returns an array of array tokens
-# dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
-# #dataClass.createAjoinedPhrases(text)
-#
-# dataClass.extractTargetTerms()
-#
-# # stemming is allowed in the evaluation
-# # takes about a minute
+# process doc so it is an array of arrays
+# 1.  instance of deliminators
+dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
+#dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.wrapTextInArray)
+
+
+
+#dataClass.dataset['processDocs'] = dataClass.dataset.stringDocs
+
+
+#dataClass.dataset['processDocs'] = dataClass.dataset['stringDocs']
+# #tester = dataClass.dataset.processDocs[0]
+# # clean the corpus --> returns an array of array tokens
+dataClass.dataset['processDocs'] = dataClass.dataset.processDocs.apply(dataClass.cleanSentences)
+#dataClass.createAjoinedPhrases(text)
+
+dataClass.extractTargetTerms()
+
+# stemming is allowed in the evaluation
+# takes about a minute
 # print("stemming_____")
-# text = dataClass.dataset['keyTerms'][2]
 # dataClass.dataset['processDocs'] = dataClass.dataset['processDocs'].apply(dataClass.stem_Doc)
-# dataClass.dataset['keyTerms'] = dataClass.dataset['keyTerms'].apply(dataClass.stem_array)
-# text = dataClass.dataset['processDocs'][2]
-# print(text)
-# text = dataClass.dataset['keyTerms'][2]
-# print(text)
-# print("stemming complete.")
-#
-#
-# allIndex = []
-# precision = 0
-# recall = 0
-# fscore = 0
-# for index in range(len(list(dataClass.dataset['processDocs']))):
-# #for index in range(0, 1):
-#
-#     print("at stage {}".format(index))
-#
-#     testerDoc = dataClass.dataset['processDocs'][index]
-#
-#     PR = pageRankClass(testerDoc)
-#
-#     # as far as here it is good
-#     PR.constructGraph(testerDoc)
-#     #print(PR.graph.nodes())
-#
-#     PR.createPhrasese()
-#
-#     #print(PR.posCorp)
-#     docKeys = dataClass.dataset.keyTerms[index]
-#     indexLoc = dataClass.extractKeyOrderedrank(PR.textRankDict , docKeys)
-#     allIndex.append(indexLoc)
-#
-#     y_pred = dict(list(PR.textRankDict.items())[:15])
-#     y_true = docKeys
-#
-#     precision_instance , recall_instance, fscore_instance = dataClass.calculateFscore( y_pred, y_true)
-#     precision += precision_instance
-#     recall += recall_instance
-#     fscore += fscore_instance
-#     # print(10*"*")
-#     # print(precision , recall, fscore)
-#     # print(10*"-")
-#
-# indexLoc = dataClass.rankLocationIndex(allIndex)
-# print(indexLoc)
-# dataClass.plotIndexResults(indexLoc)
-#
-# eval_sum = sum([1 for terms in dataClass.dataset.keyTerms if len(terms) > 0])
-#
-# print(" p , r , f {} {} {} ".format(precision/eval_sum , recall/eval_sum, fscore/eval_sum))
+dataClass.dataset['keyTerms'] = dataClass.dataset['keyTerms'].apply(dataClass.stem_array)
+
+print(dataClass.dataset['keyTerms'] [12])
+print("stemming complete.")
+text = dataClass.dataset['processDocs'] [12]
+print(10*"\n")
+print(text)
+
+allIndex = []
+precision = 0
+recall = 0
+fscore = 0
+for index in range(len(list(dataClass.dataset['processDocs']))):
+#for index in range(12, 13):
+
+    print("at stage {}".format(index))
+
+    testerDoc = dataClass.dataset['processDocs'][index]
+
+    PR = pageRankClass(testerDoc)
+
+    # as far as here it is good
+    PR.constructGraph(testerDoc)
+    print("number of nodes : " + str(len(PR.graph.nodes())))
+
+
+    PR.createPhrasese()
+
+    print(len(PR.textRankDict.items()))
+    tempDict  = {}
+
+
+    #print(PR.posCorp)
+    docKeys = dataClass.dataset.keyTerms[index]
+    indexLoc = dataClass.extractKeyOrderedrank(PR.textRankDict , docKeys)
+    allIndex.append(indexLoc)
+
+    y_pred = dict(list(PR.textRankDict.items())[:15])
+    print(y_pred)
+    y_true = docKeys
+
+    precision_instance , recall_instance, fscore_instance = dataClass.calculateFscore( y_pred, y_true)
+    precision += precision_instance
+    recall += recall_instance
+    fscore += fscore_instance
+    # print(10*"*")
+    # print(precision , recall, fscore)
+    # print(10*"-")
+
+indexLoc = dataClass.rankLocationIndex(allIndex)
+print(indexLoc)
+dataClass.plotIndexResults(indexLoc)
+
+eval_sum = sum([1 for terms in dataClass.dataset.keyTerms if len(terms) > 0])
+
+print(" p , r , f {} {} {} ".format(precision/eval_sum , recall/eval_sum, fscore/eval_sum))
 
 
 print(10*"-*-")

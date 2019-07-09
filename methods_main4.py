@@ -132,15 +132,34 @@ class DataSet(object):
 
 
 
-    def expandAccronymnsInText(self, accDict):
+    def expandAccronymnsInText(self):
         # method takes the dictionary created in extractAccronymnsFromText
         # loops over processDocs -- arrays of string and expands accronyms
         for i in range(self.dataset.shape[0]):
-            #dictt = self.dataset.accDict[i]
+            dictt = self.dataset.accDict[i]
             #print(dictt)
             text = self.dataset.stringDocs[i]
-            text = self.fillOutReference(text, accDict)
+            text = self.fillOutReference(text, dictt)
             self.dataset.stringDocs[i] = text
+
+    def fillOutAcronymns(self, text, accDict):
+        print(len(accDict.items()))
+        print(len(text))
+        #print(accDict["SVM"])
+        text = self.cleanSent(text)
+        for term in text.split():
+            if 'S' in term:
+                print(term)
+            #if term in accDict.keys():
+
+            if term == 'SVM':
+                  print("oo")
+
+
+
+
+
+        return text
 
     def extractAllAcronymsFromText(self, corpus):
         accronymDict = {}
@@ -151,9 +170,10 @@ class DataSet(object):
 
 
 
-    def extractAccronymnsFromText(self, text, accronymDict):
+    def extractAccronymnsFromText(self, text):
         # input is a string list of sentences
         # loop over the sentences in text
+        accronymDict = {}
         text = text.split(". ")
         for t in text:
             if "(" in t:
@@ -367,7 +387,9 @@ class DataSet(object):
         stringDocsArray = []
         for index, row in dataClass.dataset.iterrows():
             #print(index , dataClass.meta_dataset.files[index])
+
             text = self.fillOutReference(dataClass.dataset.stringDocs[index], dataClass.dataset.refs[index])
+
             #print(text)
             # reintroduce references as per base of page
             # for value in dataClass.dataset.refs[index].values():
@@ -384,14 +406,17 @@ class DataSet(object):
         for key , value in ref_dict.items():
             #value = "." +  value + "."
             if key.lower() in text.lower():
-                value = value + " " + key
-                value = " . " +  value + " . "
+                #value = value + " " + key
+                value = " and. " +  value + " and. "
+                #value = value + "-----bbbbbbbb-----"
                 #print(value)
                 #value = self.capitaliseText(value)
                 text = text.replace( key, value)
                 count = count + 1
         #print("numebr of accs added {}".format(count))
         return text
+
+
 
     def capitaliseText(self, text):
         term = ""
@@ -653,12 +678,13 @@ class DataSet(object):
 
 
     def cleanSent(self, sent):
-        remove = string.punctuation
-        remove = remove.replace("-", "")
-        pattern = r"[{}]".format(remove)
+        removeSyms = string.punctuation
+        removeSyms = removeSyms.replace("-", "")
+        pattern = r"[{}]".format(removeSyms)
         sent = re.sub(pattern, " ", sent.strip().lower())
         # removes supurious spaces by breaking sent into array and reforming with only one space
         sent = sent.split()
+
         return " ".join(sent)
 
     def processDict(self, dict):
@@ -738,6 +764,7 @@ class pageRankClass():
 
 
 
+
     def createPhrasese(self):
         for phrases in self.posCorp:
             bool = False
@@ -773,14 +800,22 @@ class pageRankClass():
 
 
     def constructGraph(self, testerDoc):
+        d = DataSet("")
         # iterates over array of array tokens and replaces non pos with _
         self.posCorp = self.extractPosTags(testerDoc)
+
+        self.posCorp  = d.stem_Doc( self.posCorp)
+
+
         # create a a new instance Text without the _
+        #print(self.posCorp)
+        # the corpus is rejoined so that the graphing can make connection between terms
         Text = [[x for x in array if x is not "_"] for array in self.posCorp]
 
-
         # method takes array of arrays of tokenised corpus
+        print("corpus length {}".format(len(Text)))
         graph = self.plotDiGraph([Text])
+
         # create the inout dict
         # takes construct graph and maps the neighbours of the graph
         self.createInoutDict()
@@ -792,6 +827,18 @@ class pageRankClass():
         self.textRankDict = dict(sorted(self.textRankDict.items(), key=lambda x: x[1], reverse = True))
 
         return self.textRankDict
+
+    def constructPhrasesConsideringUnderScore(self):
+        # never mind
+        print(len(self.posCorp))
+        corpus = self.posCorp
+        allArray = []
+        for value in corpus:
+            print(value)
+            print()
+
+        return corpus
+
 
     def calculatePageRankScore(self):
         self.score  = np.ones(len(self.vocab), dtype = np.float32)
@@ -870,5 +917,6 @@ class pageRankClass():
                 else:
                     sent.append("_")
             sentArray.append(sent)
+
 
         return sentArray
