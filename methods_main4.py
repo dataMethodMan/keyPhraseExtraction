@@ -13,9 +13,143 @@ import nltk
 from nltk.corpus import stopwords
 stop = set(stopwords.words('english'))
 from nltk.stem import PorterStemmer
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+class tfidfClass(object):
+    # this class will contain all of the methods related to tfidf processing
+    def __init__(self):
+        self = self
+        self.stopwordRemove = True
+        self.applyStemming = True
+        self.wordStore = {}
+
+    def tokenize_only(self, text):
+        #data has been processed and requires only splitting into tokens
+        tokens = [word for word in text.split(" ")]
+        return tokens
+
+    def processSent(self, text):
+
+        text = self.removeSingles(text)
+
+        if self.stopwordRemove:
+            text = [x for x in text if x not in stop]
+
+        return " ".join(text)
+    #
+    # def applyStemming(self, text):
+    #     if self.applyStemming:
+    #         for term in text.split():
+
+
+
+
+    def ExtractSalientTerms(self, tfidf_vectoriser, tfidf_matrix, title = "tfidf_.pkl",  failSafe = True):
+        print('salient terms')
+        df = pd.DataFrame()
+        try:
+            if (failSafe):
+                ''' purposely crash try/except to force vectoriser rebuild '''
+                x = 1/0
+
+            print("loading presaved processed corpus --")
+            df = pd.read_pickle(title)
+            # lists for storing data
+
+        except:
+            print(" failed to load terms -- rebuilding -- ")
+            doc_id_list = []
+            term_list = []
+            term_idf_list = []
+
+            # extract terms from vectoriser
+            terms = tfidf_vectoriser.vocabulary_
+
+
+            keys = terms.keys()
+            values = terms.values()
+
+            # invert the dict so the keys are the values and values the keys
+            dict1 = dict(zip(values, keys))
+
+            # shortcut for saving and loading dictionary
+            self.wordStore = dict1
+            with open('dict' + title + '.pkl', 'wb') as f:
+                pickle.dump(dict1, f, pickle.HIGHEST_PROTOCOL)
+
+
+            # iterate through matrix
+            for i in range(0, (tfidf_matrix.shape[0])):
+                for j in range(0, len(tfidf_matrix[i].indices)):
+                    # append the appropriate list with the appropriate value
+                    doc_id_list.append(i)
+                    term_list.append(dict1[tfidf_matrix[i].indices[j]])
+                    term_idf_list.append(tfidf_matrix[i].data[j])
+
+            # cast to dataframe
+            df = pd.DataFrame({"doc_id_list": doc_id_list, "term_list" : term_list, "term_idf_list": term_idf_list})
+            # pickle process for future fast retrieval
+            df.to_pickle(title)
+
+        print('loading dictionary')
+        with open('dict' + title + '.pkl', 'rb') as f:
+            self.wordStore =  pickle.load(f)
+
+        #print(list(self.wordStore.items())[:5])
+        return df
+
+
+    def removeSingles(self, text):
+        sent = []
+        for t in text.split():
+            if len(t) > 1:
+                sent.append(t)
+            elif t.isdigit():
+                sent.append(t)
+        return sent
+
+
+
+    def applyTFidfToCorpus(self, dfList, title = "tfidf_store.pkl", failSafe = False):
+        # create tf-idf matrix for the corpus
+        #tfidf_matrix = None
+        try:
+            if (failSafe):
+                ''' purposely crash try/except to force vectoriser rebuild '''
+                x = 1/0
+
+            print("-- Retrieving stored tfidf_matrix --")
+
+            tfidf_matrix = pickle.load(open("matrix_" + title, "rb" ) )
+            tfidf_vectoriser = pickle.load(open("vectorisor_" + title, "rb" ) )
+
+
+        except:
+
+            print("failed to load -- building tokeniser --")
+            # initialise vectoriser and pass cleaned data
+            tfidf_vectoriser = TfidfVectorizer( ngram_range = (1,4), tokenizer = self.tokenize_only)
+            tfidf_matrix = tfidf_vectoriser.fit_transform(list(dfList))
+
+            #df= pd.DataFrame({"tfidf_matrix" : tfidf_matrix}, index=[0])
+            #save_tfidf.to_pickle("tfidf_min_04.pkl")
+            #df.to_pickle("tfidf_matrix.pkl")
+
+            # pickle tfidf matrix for faster future load
+            with open("matrix_" + title, 'wb') as handle:
+                        pickle.dump(tfidf_matrix, handle)
+
+            # pickle tfidf vectoriser for faster future load
+            with open("vectorisor_" + title, 'wb') as handle:
+                        pickle.dump(tfidf_vectoriser, handle)
+
+        return tfidf_matrix , tfidf_vectoriser
+
 
 
 
@@ -37,13 +171,27 @@ class DataSet(object):
         # dict to hold phrases
         self.phraseDict = {}
 
+    def convertToBool(self, array):
+        bool_array = []
+        for a in array:
+            if a == 0:
+                bool_array.append(False)
+            else:
+                bool_array.append(True)
+        return bool_array
 
     def stem_Doc(self, text):
         # takes in as argument array of arrays of tokenised string
         # iterates over arrays and passes each internal array of token to stem_array(self, text)
+        ps = PorterStemmer()
         docList = []
-        for t in text:
-            docList.append(self.stem_array(t))
+        if type(text) == str:
+            for t in text.split():
+                docList.append(ps.stem(t))
+            docList = " ".join(docList)
+        else:
+            for t in text:
+                docList.append(self.stem_array(t))
 
         return docList
 
@@ -139,27 +287,9 @@ class DataSet(object):
             dictt = self.dataset.accDict[i]
             #print(dictt)
             text = self.dataset.stringDocs[i]
-            text = self.fillOutReference(text, dictt)
+            text = self.fillOutReferenceAcc(text, dictt)
             self.dataset.stringDocs[i] = text
 
-    def fillOutAcronymns(self, text, accDict):
-        print(len(accDict.items()))
-        print(len(text))
-        #print(accDict["SVM"])
-        text = self.cleanSent(text)
-        for term in text.split():
-            if 'S' in term:
-                print(term)
-            #if term in accDict.keys():
-
-            if term == 'SVM':
-                  print("oo")
-
-
-
-
-
-        return text
 
     def extractAllAcronymsFromText(self, corpus):
         accronymDict = {}
@@ -268,9 +398,6 @@ class DataSet(object):
     def extractKeyOrderedrank(self, docDict, docKeyTerms):
         # sort the dictionary to allow for phrases being added
         #docDict = dict(sorted(docDict.items(), key=lambda x: x[1], reverse = True))
-
-
-
         index = [x for x in range(1 , len(docDict.items())+ 1)]
 
         # assign index to rank
@@ -356,7 +483,9 @@ class DataSet(object):
         bool = False
         for line in text:
             line = self.cleanSent(line)
-            line = [x for x in line.split() if len(x) > 1]
+
+            line = [x for x in line.split() if len(x) > 1 or x == "_"]
+
             if len(line)  > 1:
                 allSent.append(line)
         return allSent
@@ -391,16 +520,16 @@ class DataSet(object):
             text = self.fillOutReference(dataClass.dataset.stringDocs[index], dataClass.dataset.refs[index])
 
             #print(text)
-            # reintroduce references as per base of page
-            # for value in dataClass.dataset.refs[index].values():
-            #      text = text + ". " + value
-            # stringDocsArray.append(text)
+            #reintroduce references as per base of page
+            for value in dataClass.dataset.refs[index].values():
+                 text = text + ". and" + value
+            stringDocsArray.append(text)
 
         return stringDocsArray
 
 
 
-    def fillOutReference(self, text, ref_dict):
+    def fillOutReferenceAcc(self, text, ref_dict):
         # takes as arguemnt string and dictionary and expands reference numbers
         count = 0
         for key , value in ref_dict.items():
@@ -413,6 +542,25 @@ class DataSet(object):
                 #value = self.capitaliseText(value)
                 text = text.replace( key, value)
                 count = count + 1
+        #print("numebr of accs added {}".format(count))
+        return text
+
+    def creatDeliminators(self, text):
+        text = text.replace( ".", " _ ")
+        text = text.replace( ",", " _ ")
+        text = text.replace( ":", " _ ")
+        ext = text.replace( ";", " _ ")
+        return text
+
+
+
+    def fillOutReference(self, text, ref_dict):
+        # takes as arguemnt string and dictionary and expands reference numbers
+        count = 0
+        for key , value in ref_dict.items():
+            #value = "." +  value + "."
+            text = text.replace( key, value)
+            count = count + 1
         #print("numebr of accs added {}".format(count))
         return text
 
@@ -618,26 +766,6 @@ class DataSet(object):
             return {}
 
 
-    # def extractReferncesText(self, text):
-    #     pattern = 'REFERENCES'
-    #     if text is not None:
-    #         try:
-    #             refs_loc = text.index(pattern)
-    #             text1 = text[refs_loc:]
-    #             return text1
-    #         except:
-    #             i = 1
-    #         try:
-    #             pattern1 = pattern.lower()
-    #             pattern1 = pattern1[0].upper() + pattern1[1:]
-    #             refs_loc = text.index(pattern1)
-    #             text1 = text[refs_loc:]
-    #             percent_loc  = float(refs_loc)/len(text)
-    #             if percent_loc > .80:
-    #                 return text1
-    #         except:
-    #             i = 1
-
     def extractIndividualReferences(self, refList):
         if refList is not None:
             pattern = '(\[.*?\])'
@@ -655,31 +783,12 @@ class DataSet(object):
         else:
             return {}
 
-    # def countUpperCase(self, text):
-    #     upperCount = 1
-    #     for value in text.split():
-    #         if value.istitle():
-    #             upperCount += 1
-    #     return upperCount
-
-    #
-    # def extractRefTitle(self, text):
-    #     candList = text.split(". ")
-    #     ratioList = []
-    #     for cand in candList:
-    #         countUp = self.countUpperCase(cand)
-    #         ratio = len(cand.split())/countUp
-    #         ratioList.append(ratio)
-    #     ratioDict = dict(zip(candList, ratioList))
-    #     title = max(ratioDict.items(), key=operator.itemgetter(1))[0]
-    #     return title
-
-
 
 
     def cleanSent(self, sent):
         removeSyms = string.punctuation
         removeSyms = removeSyms.replace("-", "")
+        removeSyms = removeSyms.replace("_", "")
         pattern = r"[{}]".format(removeSyms)
         sent = re.sub(pattern, " ", sent.strip().lower())
         # removes supurious spaces by breaking sent into array and reforming with only one space
@@ -777,7 +886,8 @@ class pageRankClass():
                     try:
                         phraseScore += self.textRankDict[word]
                     except:
-                        print("exception term: ",  word)
+                        #print("exception term: ",  word)
+                        i = 1
                 else:
                     if len(phrase) > 1:
                         if bool:
@@ -804,7 +914,8 @@ class pageRankClass():
         # iterates over array of array tokens and replaces non pos with _
         self.posCorp = self.extractPosTags(testerDoc)
 
-        self.posCorp  = d.stem_Doc( self.posCorp)
+        #stemming
+        self.posCorp  = d.stem_Doc(self.posCorp)
 
 
         # create a a new instance Text without the _
