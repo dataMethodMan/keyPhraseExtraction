@@ -10,10 +10,16 @@ stop = set(stopwords.words('english'))
 
 start = time.time()
 
-df = pd.read_csv("testPermutation.txt")
-print(df.head())
+df_iter = pd.read_csv("testPermutation.txt")
 
-for iter in range(0, df.shape[0]):
+
+all_precision = []
+all_recall = []
+all_fscore = []
+
+#for iter in range(0, df.shape[0]):
+for iter in range(0, 1):
+    print(iter)
     # path associate with target data
     path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
     #path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
@@ -53,10 +59,11 @@ for iter in range(0, df.shape[0]):
 
 
     # assign the permutations
-    permutations1 = df.iloc[iter]
+    permutations1 = df_iter.iloc[iter]
 
     permutations1 = dataClass.convertToBool(permutations1)
 
+    print(permutations1)
     ## event booleans
     dataClass.stopwordRemove = permutations1[0]
     fillRefferences = permutations1[1]
@@ -143,11 +150,20 @@ for iter in range(0, df.shape[0]):
         # print(precision , recall, fscore)
         # print(10*"-")
 
-indexLoc = dataClass.rankLocationIndex(allIndex)
-print(indexLoc)
-dataClass.plotIndexResults(indexLoc)
+    eval_sum = sum([1 for terms in dataClass.dataset.keyTerms if len(terms) > 0])
+    print(" p , r , f {} {} {} ".format(precision/eval_sum , recall/eval_sum, fscore/eval_sum))
+    all_precision.append(precision/eval_sum)
+    all_recall.append(recall/eval_sum)
+    all_fscore.append(fscore/eval_sum)
+
+print(all_fscore)
+df_iter['precision'] = all_precision
+df_iter['recall'] = all_recall
+df_iter['fscore'] = all_fscore
+
+df_iter.to_csv("results_TextRank.csv")
+
+print(10*"*")
+print((time.time() - start)/60)
 
 # find the sum of docs that have actual answers
-eval_sum = sum([1 for terms in dataClass.dataset.keyTerms if len(terms) > 0])
-
-print(" p , r , f {} {} {} ".format(precision/eval_sum , recall/eval_sum, fscore/eval_sum))
