@@ -133,7 +133,7 @@ class tfidfClass(object):
 
             print("failed to load -- building tokeniser --")
             # initialise vectoriser and pass cleaned data
-            tfidf_vectoriser = TfidfVectorizer( tokenizer = self.tokenize_only)
+            tfidf_vectoriser = TfidfVectorizer( ngram_range = (1,4), tokenizer = self.tokenize_only)
             tfidf_matrix = tfidf_vectoriser.fit_transform(list(dfList))
 
             #df= pd.DataFrame({"tfidf_matrix" : tfidf_matrix}, index=[0])
@@ -170,6 +170,7 @@ class DataSet(object):
         self.meta_dataset = pd.DataFrame()
         # dict to hold phrases
         self.phraseDict = {}
+        self.stopwordRemove = False
 
     def convertToBool(self, array):
         bool_array = []
@@ -223,12 +224,6 @@ class DataSet(object):
 
         y_pred = list(y_pred.keys())
         y_true = y_true
-
-        print("predicted")
-        print(10*"_")
-        print(y_pred)
-        print("actual")
-        print(10*"_")
         print(y_true)
 
         #precision = (number of true positives)/ number of positives predicted
@@ -248,7 +243,7 @@ class DataSet(object):
         except:
             fscore = 0
 
-        #print(fscore)
+        print(fscore)
 
         return precision*100 , recall*100 , fscore*100
 
@@ -403,7 +398,7 @@ class DataSet(object):
 
     def extractKeyOrderedrank(self, docDict, docKeyTerms):
         # sort the dictionary to allow for phrases being added
-        docDict = dict(sorted(docDict.items(), key=lambda x: x[1], reverse = True))
+        #docDict = dict(sorted(docDict.items(), key=lambda x: x[1], reverse = True))
         index = [x for x in range(1 , len(docDict.items())+ 1)]
 
         # assign index to rank
@@ -419,8 +414,7 @@ class DataSet(object):
                 indexLoc.append(-1)
                 temp[key] = - 1
 
-
-        #print(temp)
+        print(temp)
         return indexLoc
 
 
@@ -492,6 +486,9 @@ class DataSet(object):
             line = self.cleanSent(line)
 
             line = [x for x in line.split() if len(x) > 1 or x == "_"]
+
+            if self.stopwordRemove:
+                line = [ x for x in line if x not in stop]
 
             if len(line)  > 1:
                 allSent.append(line)
@@ -876,6 +873,9 @@ class pageRankClass():
         self.threshold = 0.0001 # convergence threshold
         # holds the final score
         self.textRankDict = {}
+        # variable to determine if stemming or not
+        # stems the phrases after construction
+        self.stemDoc = False
 
 
 
@@ -916,13 +916,14 @@ class pageRankClass():
         print(phrase)
 
 
-    def constructGraph(self, testerDoc):
+    def constructGraph(self, testerDoc, stem = False):
         d = DataSet("")
         # iterates over array of array tokens and replaces non pos with _
         self.posCorp = self.extractPosTags(testerDoc)
 
         #stemming
-        self.posCorp  = d.stem_Doc(self.posCorp)
+        if stem:
+            self.posCorp  = d.stem_Doc(self.posCorp)
 
 
         # create a a new instance Text without the _
@@ -1032,7 +1033,6 @@ class pageRankClass():
             for tag in pos_tag:
                 if tag[1] in desired_tags:
                     sent.append(tag[0])
-
                 else:
                     sent.append("_")
             sentArray.append(sent)
