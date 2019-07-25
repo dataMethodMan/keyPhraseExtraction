@@ -161,6 +161,16 @@ class DataSet(object):
             path:           string location of targt directory
     """
 
+    def countIncludedterms(self):
+        all_terms = []
+        for key , value in self.dataset.refs.items():
+            for k , v in value.items():
+                all_terms.append(v)
+
+        return all_terms
+
+
+
     def __init__(self, path):
         # path to target directory
         self.path = path
@@ -171,6 +181,7 @@ class DataSet(object):
         # dict to hold phrases
         self.phraseDict = {}
         self.stopwordRemove = False
+        self.refThreshold = 0.0001
 
     def convertToBool(self, array):
         bool_array = []
@@ -254,7 +265,7 @@ class DataSet(object):
         return [text]
 
     def createAjoinedPhrases(self, text):
-        print(len(text))
+        #print(len(text))
         # length of phrases to be generated
         for t in text:
             while len(t) > 1:
@@ -371,7 +382,7 @@ class DataSet(object):
 
     def createConsecutivePhrases(self):
         # iterate over corpus and extract connected terms
-        print(self.dataset.columns)
+        #print(self.dataset.columns)
         doc_dict = {}
         index = 0
         sliding_window = 4
@@ -382,7 +393,7 @@ class DataSet(object):
         for array in doc:
             while len(array) > 1:
                 array = self.reduceVector(array, sliding_window)
-            print()
+            #print()
 
 
 
@@ -391,7 +402,7 @@ class DataSet(object):
 
     def reduceVector(self, vector, sliding_window):
         processArray = [vector[:sliding_window]]
-        print(processArray)
+        #print(processArray)
         return vector[sliding_window:]
 
 
@@ -414,7 +425,7 @@ class DataSet(object):
                 indexLoc.append(-1)
                 temp[key] = - 1
 
-        print(temp)
+        #print(temp)
         return indexLoc
 
 
@@ -605,7 +616,7 @@ class DataSet(object):
         # method takes in a string text and returns an array of only salient terms
         keeps = []
         for t in text.split():
-            if pdf.prob(t) > 0.0001:
+            if pdf.prob(t) > self.refThreshold:
                 keeps.append(t)
         return keeps
 
@@ -759,9 +770,9 @@ class DataSet(object):
         return sectionDict
 
     def extractRefernces(self, text):
-        print(text)
+        #print(text)
         #print(len(referenceText))
-        print(isinstance(text, string))
+        #print(isinstance(text, string))
         if text is not None:
             referenceText = self.extractReferncesText(text)
             referenceDict = self.extractIndividualReferences(referenceText)
@@ -876,12 +887,15 @@ class pageRankClass():
         # variable to determine if stemming or not
         # stems the phrases after construction
         self.stemDoc = False
+        self.PhraseCandidates = {}
 
 
 
 
 
     def createPhrasese(self):
+        count = 0
+
         for phrases in self.posCorp:
             bool = False
             #print(phrase)
@@ -893,19 +907,27 @@ class pageRankClass():
                     try:
                         phraseScore += self.textRankDict[word]
                     except:
-                        #print("exception term: ",  word)
+                        print("exception term: ",  word)
                         i = 1
                 else:
                     if len(phrase) > 1:
                         if bool:
-                            print(phrase)
+                            #print(phrase)
                             bool = False
                         phrase = " ".join(phrase)
                         if phrase not in self.textRankDict.keys():
                             self.textRankDict[phrase] = phraseScore/len(phrase.split())
+
+                        else:
+                            count = count + 1
+                        if phrase not in self.PhraseCandidates:
+                            self.PhraseCandidates[phrase] = 1
+                        else:
+                            self.PhraseCandidates[phrase] = self.PhraseCandidates[phrase] + 1
                         #print(phrase , phraseScore/len(phrase))
                     phrase = []
                     phraseScore = 0
+            #print("overlap terms! "  + str(count))
 
         self.textRankDict = dict(sorted(self.textRankDict.items(), key=lambda x: x[1], reverse = True))
 
@@ -931,9 +953,12 @@ class pageRankClass():
         # the corpus is rejoined so that the graphing can make connection between terms
         Text = [[x for x in array if x is not "_"] for array in self.posCorp]
 
+
+
         # method takes array of arrays of tokenised corpus
         print("corpus length {}".format(len(Text)))
         graph = self.plotDiGraph([Text])
+        print(len(self.graph.nodes()))
 
         # create the inout dict
         # takes construct graph and maps the neighbours of the graph
@@ -949,11 +974,11 @@ class pageRankClass():
 
     def constructPhrasesConsideringUnderScore(self):
         # never mind
-        print(len(self.posCorp))
+        #print(len(self.posCorp))
         corpus = self.posCorp
         allArray = []
         for value in corpus:
-            print(value)
+        #    print(value)
             print()
 
         return corpus
@@ -1002,6 +1027,7 @@ class pageRankClass():
                 while(len(section) > 1):
                     self.graph, section = self.plotArray( section, depth, self.graph)
         # update vocab list
+        print("length of graph nodes: " +  str(len(self.graph.nodes())))
         self.vocab = list(self.graph.nodes())
 
         #return g
