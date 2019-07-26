@@ -17,12 +17,12 @@ all_precision = []
 all_recall = []
 all_fscore = []
 
-#for iter in range(0, df.shape[0]):
-for iter in range(0, 1):
+for iter in range(0, df_iter.shape[0]):
+#for iter in range(0, 1):
     print(iter)
     # path associate with target data
-    path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
-    #path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
+    #path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+    path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
     # initialse class with path pointer
     dataClass = DataSet(path)
 
@@ -60,8 +60,9 @@ for iter in range(0, 1):
 
     # assign the permutations
     permutations1 = df_iter.iloc[iter]
+    #permutations1 = [False, True, True, True, True]
 
-    permutations1 = dataClass.convertToBool(permutations1)
+    #permutations1 = dataClass.convertToBool(permutations1)
 
     print(permutations1)
     ## event booleans
@@ -84,8 +85,12 @@ for iter in range(0, 1):
 
     # 3.  instance of deliminators takes an either or situation
     if setDeliminators:
-        dataClass.dataset.stringDocs = dataClass.dataset.stringDocs.apply(dataClass.creatDeliminators)
+        print("applying delim")
+        #dataClass.dataset.stringDocs = dataClass.dataset.stringDocs.apply(dataClass.creatDeliminators)
         dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
+
+
+    #print(dataClass.dataset.processDocs[0])
 
 
     if not setDeliminators:
@@ -104,7 +109,6 @@ for iter in range(0, 1):
     if applyStemming:
         print("applying stemming")
         #text =dataClass.stem_Doc(dataClass.dataset['processDocs'][0])
-        dataClass.dataset.processDocs = dataClass.dataset.processDocs.apply(dataClass.stem_Doc)
         dataClass.dataset['keyTerms'] = dataClass.dataset['keyTerms'].apply(dataClass.stem_array)
 
 
@@ -113,8 +117,8 @@ for iter in range(0, 1):
     precision = 0
     recall = 0
     fscore = 0
-    #for index in range(len(list(dataClass.dataset['processDocs']))):
-    for index in range(0, 1):
+    for index in range(len(list(dataClass.dataset['processDocs']))):
+    #for index in range(0, 1):
 
         print("at stage {}".format(index))
 
@@ -129,13 +133,14 @@ for iter in range(0, 1):
 
         PR.createPhrasese()
 
-        print(len(PR.textRankDict.items()))
+        #print(len(PR.textRankDict.items()))
         tempDict  = {}
 
 
         #print(PR.posCorp)
         docKeys = dataClass.dataset.keyTerms[index]
         indexLoc = dataClass.extractKeyOrderedrank(PR.textRankDict , docKeys)
+
         allIndex.append(indexLoc)
 
         y_pred = dict(list(PR.textRankDict.items())[:15])
@@ -161,7 +166,7 @@ df_iter['precision'] = all_precision
 df_iter['recall'] = all_recall
 df_iter['fscore'] = all_fscore
 
-df_iter.to_csv("results_TextRank.csv")
+df_iter.to_csv("results_TextRank_recheck.csv")
 
 print(10*"*")
 print((time.time() - start)/60)

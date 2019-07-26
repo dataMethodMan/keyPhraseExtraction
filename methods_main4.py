@@ -425,7 +425,7 @@ class DataSet(object):
                 indexLoc.append(-1)
                 temp[key] = - 1
 
-        #print(temp)
+        print(temp)
         return indexLoc
 
 
@@ -537,7 +537,7 @@ class DataSet(object):
             #print(text)
             #reintroduce references as per base of page
             for value in dataClass.dataset.refs[index].values():
-                 text = text + ". and" + value
+                 text = text + "  " + value
             stringDocsArray.append(text)
 
         return stringDocsArray
@@ -551,7 +551,7 @@ class DataSet(object):
             #value = "." +  value + "."
             if key.lower() in text.lower():
                 #value = value + " " + key
-                value = " and. " +  value + " and. "
+                value = " , " +  value + " , "
                 #value = value + "-----bbbbbbbb-----"
                 #print(value)
                 #value = self.capitaliseText(value)
