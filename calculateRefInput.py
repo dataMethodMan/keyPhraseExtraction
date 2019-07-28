@@ -19,17 +19,23 @@ all_fscore = []
 thresher = .001
 count = 1
 
+fscore_counter = []
+term_count = []
+thresher_count = []
 thresher_array = [.00001, .0001, .001, .01, .1]
 #for iter in range(0, df.shape[0]):
-#for iter in range(0, 1):
+#for i in range(0, 1):
+
 for i in range(len(thresher_array) - 1):
     thresher = thresher_array[i]
     increment = thresher_array[i]
     while  thresher < thresher_array[i + 1]:
+        thresher_count.append(thresher)
+
         #print(iter)
         # path associate with target data
-        path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
-        #path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
+        #path = "/Users/stephenbradshaw/Documents/codingTest/AutomaticKeyphraseExtraction-master/data/"
+        path = "C:/userOne/AutomaticKeyphraseExtraction-master/data/"
         # initialse class with path pointer
         dataClass = DataSet(path)
         dataClass.refThreshold = thresher
@@ -58,15 +64,12 @@ for i in range(len(thresher_array) - 1):
         pdf.calculateProbTerm()
 
 
-    #tester = list(dataClass.dataset['refs'])
-    #dataClass.refThreshold = .00001
-
 
         # takes out unwanted terms in references
         dataClass.dataset['refs'] = dataClass.cleanRefs(dataClass.dataset.refs, pdf)
 
         all_terms = dataClass.countIncludedterms()
-
+        print("all terms init {}".format(str(len(all_terms))))
         all_ref_terms = []
         for value in all_terms:
             all_ref_terms.extend(value.split())
@@ -76,7 +79,7 @@ for i in range(len(thresher_array) - 1):
         all_ref_terms = list(set(all_ref_terms))
         print("terms being included: " + str(len(all_ref_terms)))
         thresher= thresher + increment
-
+        term_count.append(len(all_ref_terms))
 
         count = count + 1
 
@@ -95,7 +98,7 @@ for i in range(len(thresher_array) - 1):
         #permutations1 = dataClass.convertToBool(permutations1)
 
         permutations1 = [False, True, True, True, True]
-        print(permutations1)
+        #print(permutations1)
         ## event booleans
         dataClass.stopwordRemove = permutations1[0]
         fillRefferences = permutations1[1]
@@ -117,11 +120,14 @@ for i in range(len(thresher_array) - 1):
         # 3.  instance of deliminators takes an either or situation
         if setDeliminators:
             print("applying deliminators")
-            #dataClass.dataset.stringDocs = dataClass.dataset.stringDocs.apply(dataClass.creatDeliminators)
             dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.splitCorpus)
+            # ------>>>>>
+            #dataClass.dataset.stringDocs = dataClass.dataset.stringDocs.apply(dataClass.creatDeliminators)
+
 
 
         if not setDeliminators:
+            print("not applying deliminators")
             dataClass.dataset['processDocs']  = dataClass.dataset.stringDocs.apply(dataClass.wrapTextInArray)
 
 
@@ -137,7 +143,7 @@ for i in range(len(thresher_array) - 1):
         if applyStemming:
             print("applying stemming")
             #text =dataClass.stem_Doc(dataClass.dataset['processDocs'][0])
-            dataClass.dataset.processDocs = dataClass.dataset.processDocs.apply(dataClass.stem_Doc)
+            #dataClass.dataset.processDocs = dataClass.dataset.processDocs.apply(dataClass.stem_Doc)
             dataClass.dataset['keyTerms'] = dataClass.dataset['keyTerms'].apply(dataClass.stem_array)
 
 
@@ -184,7 +190,7 @@ for i in range(len(thresher_array) - 1):
             y_true = docKeys
 
             precision_instance , recall_instance, fscore_instance = dataClass.calculateFscore( y_pred, y_true)
-            precision += precision_instance
+            fscore += fscore_instance
 
 
             indexLoc = dataClass.rankLocationIndex(allIndex)
@@ -199,7 +205,9 @@ for i in range(len(thresher_array) - 1):
             #         # print(10*"-")
             #
         eval_sum = sum([1 for terms in dataClass.dataset.keyTerms if len(terms) > 0])
-        print(" p , r , f {} {} {} ".format(precision/eval_sum))
+        print(eval_sum)
+        print(" p , r , f {} ".format(fscore/eval_sum))
+        fscore_counter.append(fscore/eval_sum)
             #     all_precision.append(precision/eval_sum)
             #     all_recall.append(recall/eval_sum)
             #     all_fscore.append(fscore/eval_sum)
@@ -211,8 +219,18 @@ for i in range(len(thresher_array) - 1):
             #
             # # df_iter.to_csv("results_TextRank.csv")
 
+df = pd.DataFrame()
+
+df['fscore'] = fscore_counter
+df['term_count'] = term_count
+df['thresher'] = thresher_count
+
+df.to_csv("ref_test_textrank.csv")
+print(fscore_counter)
+
 print(10*"*")
 print((time.time() - start)/60)
+
 
 # find the sum of docs that have actual answers
 #[131, 221, 369, 186, 35, 310]
